@@ -17,17 +17,16 @@ This system is an asset management system provides a comprehensive solution for 
 1. **Asset**: Represents an asset with properties like `id`, `name`, `description`, `image`, `createdAt`, `updatedAt`, `assetType`, `isTokenized`, `owner`, `availableUnits`, and `pricePerUnit`.
 2. **AssetPayload**: Payload structure for creating an asset.
 3. **UpdateAssetPayload**: Payload structure for updating an asset.
-4. **Ticket**: Represents a ticket related to an asset.
-5. **User**: Represents a user with properties like `id`, `principal`, `name`, `email`, `phone`, and `assets`.
-6. **UserPayload**: Payload structure for creating a user.
-7. **UpdateUserPayload**: Payload structure for updating a user.
-8. **ReservePayment**: Represents a payment reservation with properties like `price`, `status`, `seller`, `paid_at_block`, and `memo`.
-9. **PaymentStatus**: Variant representing different payment status types.
-10. **ErrorType**: Variant representing different error types.
+4. **User**: Represents a user with properties like `id`, `principal`, `name`, `email`, `phone`, and `assets`.
+5. **UserPayload**: Payload structure for creating a user.
+6. **UpdateUserPayload**: Payload structure for updating a user.
+7. **ReservePayment**: Represents a payment reservation with properties like `price`, `status`, `seller`, `paid_at_block`, and `memo`.
+8. **PaymentStatus**: Variant representing different payment status types.
+9. **ErrorType**: Variant representing different error types.
 
 ### Storage
 
-- **StableBTreeMap**: Used for durable storage of assets, tickets, users, pending payments, and persisted payments.
+- **StableBTreeMap**: Used for durable storage of assets, users, pending payments, and persisted payments.
 - Multiple instances of `StableBTreeMap` are initialized to store different types of data.
 
 ### Functions

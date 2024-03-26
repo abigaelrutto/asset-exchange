@@ -9,25 +9,9 @@ export async function updateAsset(asset) {
   return window.canister.assetManager.updateAsset(asset);
 }
 
-export async function reserveAsset(ticket) {
-  return window.canister.assetManager.createTicket(ticket);
-}
-
 export async function getAssets() {
   try {
     return await window.canister.assetManager.getAssets();
-  } catch (err) {
-    if (err.name === "AgentHTTPResponseError") {
-      const authClient = window.auth.client;
-      await authClient.logout();
-    }
-    return [];
-  }
-}
-
-export async function getAssetTickets(assetId) {
-  try {
-    return await window.canister.assetManager.getAssetTickets(assetId);
   } catch (err) {
     if (err.name === "AgentHTTPResponseError") {
       const authClient = window.auth.client;

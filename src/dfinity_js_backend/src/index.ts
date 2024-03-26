@@ -21,7 +21,6 @@ import {
 } from "azle";
 import {
   Ledger,
-  binaryAddressFromAddress,
   binaryAddressFromPrincipal,
   hexAddressFromPrincipal,
 } from "azle/canisters/ledger";
@@ -67,13 +66,6 @@ const UpdateAssetPayload = Record({
   pricePerUnit: nat64,
   image: text,
   isTokenized: text,
-});
-
-// Structure representing a ticket
-const Ticket = Record({
-  id: text,
-  assetId: text,
-  userId: text,
 });
 
 // Structure representing a user
@@ -150,7 +142,6 @@ const UserReturn = Record({
  * Values 2 and 3 are not used directly in the constructor but are utilized by the Azle compiler during compile time.
  */
 const assetsStorage = StableBTreeMap(0, text, Asset);
-const assetTickets = StableBTreeMap(2, text, Ticket);
 const usersStorage = StableBTreeMap(3, text, User);
 const pendingPayments = StableBTreeMap(4, nat64, ReservePayment);
 const persistedPayments = StableBTreeMap(7, Principal, ReservePayment);
@@ -190,7 +181,6 @@ export default Canister({
         name: "_",
         phone: "_",
       };
-      console.log("nuser", user);
       usersStorage.insert(user.id, user);
     } else {
       // add asset to the user
@@ -200,7 +190,6 @@ export default Canister({
         ...user,
         assets: [...user.assets, asset.id],
       };
-      console.log("users", updatedUser);
       usersStorage.insert(user.id, updatedUser);
     }
 
@@ -228,7 +217,6 @@ export default Canister({
     [UpdateAssetPayload],
     Result(Asset, ErrorType),
     (payload) => {
-      console.log("update");
       const assetOpt = assetsStorage.get(payload.id);
       if ("None" in assetOpt) {
         return Err({ NotFound: `asset with id=${payload.id} not found` });
@@ -238,7 +226,6 @@ export default Canister({
         ...asset,
         ...payload,
       };
-      console.log(updatedAsset);
       assetsStorage.insert(asset.id, updatedAsset);
       return Ok(updatedAsset);
     }
@@ -379,7 +366,6 @@ export default Canister({
           name: "_",
           phone: "_",
         };
-        console.log("nuser", user);
         usersStorage.insert(user.id, user);
       } else {
         // add asset to the user
@@ -389,7 +375,6 @@ export default Canister({
           ...user,
           assets: [...user.assets, clientAsset.id],
         };
-        console.log("users", updatedUser);
         usersStorage.insert(user.id, updatedUser);
       }
 
