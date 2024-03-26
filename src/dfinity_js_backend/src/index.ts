@@ -64,6 +64,7 @@ const AssetPayload = Record({
 const UpdateAssetPayload = Record({
   id: text,
   description: text,
+  pricePerUnit: nat64,
   image: text,
   isTokenized: text,
 });
@@ -82,7 +83,7 @@ const User = Record({
   name: text,
   email: text,
   phone: text,
-  assets: Vec(Asset),
+  assets: Vec(text),
 });
 
 // Payload structure for creating a user
@@ -95,6 +96,7 @@ const UserPayload = Record({
 // Payload structure for updating a user
 const UpdateUserPayload = Record({
   id: text,
+  name: text,
   email: text,
   phone: text,
 });
@@ -118,6 +120,16 @@ const ErrorType = Variant({
   InvalidPayload: text,
   PaymentFailed: text,
   PaymentCompleted: text,
+});
+
+// Structure representing a user
+const UserReturn = Record({
+  id: text,
+  principal: Principal,
+  name: text,
+  email: text,
+  phone: text,
+  assets: Vec(Asset),
 });
 
 /**
@@ -163,6 +175,35 @@ export default Canister({
       updatedAt: None,
       ...payload,
     };
+
+    // get user with the same principal
+    const userOpt = usersStorage.values().filter((user) => {
+      return user.principal.toText() === ic.caller().toText();
+    });
+    if (userOpt.length === 0) {
+      // create default user
+      const user = {
+        id: uuidv4(),
+        principal: ic.caller(),
+        assets: [asset.id],
+        email: "_",
+        name: "_",
+        phone: "_",
+      };
+      console.log("nuser", user);
+      usersStorage.insert(user.id, user);
+    } else {
+      // add asset to the user
+
+      const user = userOpt[0];
+      const updatedUser = {
+        ...user,
+        assets: [...user.assets, asset.id],
+      };
+      console.log("users", updatedUser);
+      usersStorage.insert(user.id, updatedUser);
+    }
+
     // Insert the asset into the assetsStorage
     assetsStorage.insert(asset.id, asset);
     return Ok(asset);
@@ -187,6 +228,7 @@ export default Canister({
     [UpdateAssetPayload],
     Result(Asset, ErrorType),
     (payload) => {
+      console.log("update");
       const assetOpt = assetsStorage.get(payload.id);
       if ("None" in assetOpt) {
         return Err({ NotFound: `asset with id=${payload.id} not found` });
@@ -196,6 +238,7 @@ export default Canister({
         ...asset,
         ...payload,
       };
+      console.log(updatedAsset);
       assetsStorage.insert(asset.id, updatedAsset);
       return Ok(updatedAsset);
     }
@@ -220,17 +263,33 @@ export default Canister({
   }),
 
   // get all users
-  getUsers: query([], Vec(User), () => {
-    return usersStorage.values();
+  getUsers: query([], Vec(UserReturn), () => {
+    const users = usersStorage.values();
+    return users.map((user) => {
+      const userAssets = assetsStorage.values().filter((asset) => {
+        return user.assets.includes(asset.id);
+      });
+      return {
+        ...user,
+        assets: userAssets,
+      };
+    });
   }),
 
   // Function get user by id
-  getUser: query([text], Result(User, ErrorType), (id) => {
+  getUser: query([text], Result(UserReturn, ErrorType), (id) => {
     const userOpt = usersStorage.get(id);
     if ("None" in userOpt) {
       return Err({ NotFound: `user with id=${id} not found` });
     }
-    return Ok(userOpt.Some);
+    const user = userOpt.Some;
+    const userAssets = assetsStorage.values().filter((asset) => {
+      return user.assets.includes(asset.id);
+    });
+    return Ok({
+      ...user,
+      assets: userAssets,
+    });
   }),
 
   // get assets reserved by a user
@@ -240,12 +299,8 @@ export default Canister({
       return [];
     }
     const user = userOpt.Some;
-    return user.assets.map((assetId: string) => {
-      const assetOpt = assetsStorage.get(assetId);
-      if ("None" in assetOpt) {
-        return None;
-      }
-      return Some(assetOpt.Some);
+    return assetsStorage.values().filter((asset) => {
+      return user.assets.includes(asset.id);
     });
   }),
 
@@ -284,7 +339,6 @@ export default Canister({
 
       const sellerOwner = asset.owner;
 
-      console.log("cor Id", assetId);
       const reservePayment = {
         price: cost,
         status: "pending",
@@ -300,10 +354,49 @@ export default Canister({
       };
 
       // add asset to the user
+      // get user with the same principal
+      const userOpt = usersStorage.values().filter((user) => {
+        return user.principal.toText() === ic.caller().toText();
+      });
+
+      asset.updatedAt = Some(new Date().toISOString());
+
+      const clientAsset = {
+        ...asset,
+        id: uuidv4(),
+        availableUnits: amount,
+        owner: ic.caller(),
+        isTokenized: "false",
+      };
+
+      if (userOpt.length === 0) {
+        // create default user
+        const user = {
+          id: uuidv4(),
+          principal: ic.caller(),
+          assets: [clientAsset.id],
+          email: "_",
+          name: "_",
+          phone: "_",
+        };
+        console.log("nuser", user);
+        usersStorage.insert(user.id, user);
+      } else {
+        // add asset to the user
+
+        const user = userOpt[0];
+        const updatedUser = {
+          ...user,
+          assets: [...user.assets, clientAsset.id],
+        };
+        console.log("users", updatedUser);
+        usersStorage.insert(user.id, updatedUser);
+      }
+
+      assetsStorage.insert(clientAsset.id, clientAsset);
 
       assetsStorage.insert(asset.id, updatedAsset);
 
-      console.log("reservePayment", reservePayment);
       pendingPayments.insert(reservePayment.memo, reservePayment);
       discardByTimeout(reservePayment.memo, PAYMENT_RESERVATION_PERIOD);
       return Ok(reservePayment);

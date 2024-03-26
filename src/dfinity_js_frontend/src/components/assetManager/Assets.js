@@ -87,11 +87,11 @@ const Assets = () => {
       data.pricePerUnit = parseInt(data.pricePerUnit, 10) * 10 ** 8;
       updateAsset(data).then((resp) => {
         getAssets();
-        toast(<NotificationSuccess text="Asset added successfully." />);
+        toast(<NotificationSuccess text="Asset update successfull." />);
       });
     } catch (error) {
       console.log({ error });
-      toast(<NotificationError text="Failed to create a asset." />);
+      toast(<NotificationError text="Failed to update a asset." />);
     } finally {
       setLoading(false);
     }

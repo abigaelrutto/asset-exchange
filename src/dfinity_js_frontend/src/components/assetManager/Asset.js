@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { Card, Col, Badge, Stack } from "react-bootstrap";
 import { Principal } from "@dfinity/principal";
 import BuyAsset from "./BuyAsset";
-import { Link } from "react-router-dom";
 import UpdateAsset from "./UpdateAsset";
 
 const Asset = ({ asset, buy, update }) => {
@@ -24,6 +23,9 @@ const Asset = ({ asset, buy, update }) => {
   const intAvailableUnits = Number(availableUnits);
   const intPricePerUnit = Number(pricePerUnit / BigInt(10 ** 8));
 
+  const principal = window.auth.principalText;
+  const isOwnersAsset = Principal.from(asset.owner).toText() === principal;
+
   return (
     <Col key={id}>
       <Card className=" h-100">
@@ -38,7 +40,7 @@ const Asset = ({ asset, buy, update }) => {
             <Badge bg="secondary" className="ms-auto">
               {intAvailableUnits} Available Units
             </Badge>
-            <UpdateAsset asset={asset} save={update} />
+            {isOwnersAsset && <UpdateAsset asset={asset} save={update} />}
           </Stack>
         </Card.Header>
         <div className=" ratio ratio-4x3">
@@ -55,7 +57,7 @@ const Asset = ({ asset, buy, update }) => {
             isTokenized: {isTokenized}
           </Card.Text>
           <Card.Text className="flex-grow-1">updatedAt: {updatedAt}</Card.Text>
-          <BuyAsset assetId={id} buy={buy} available={intAvailableUnits > 0} />
+          <BuyAsset asset={asset} buy={buy} available={intAvailableUnits > 0} />
         </Card.Body>
       </Card>
     </Col>

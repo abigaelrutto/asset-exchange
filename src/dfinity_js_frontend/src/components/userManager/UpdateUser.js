@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Modal, Form, FloatingLabel } from "react-bootstrap";
 
-const UpdateUser = ({ save }) => {
+const UpdateUser = ({ user, save }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -61,9 +61,8 @@ const UpdateUser = ({ save }) => {
               className="mb-3"
             >
               <Form.Control
-                as="textarea"
+                type="text"
                 placeholder="email"
-                style={{ height: "80px" }}
                 onChange={(e) => {
                   setEmail(e.target.value);
                 }}
@@ -80,6 +79,7 @@ const UpdateUser = ({ save }) => {
             disabled={!isFormFilled()}
             onClick={() => {
               save({
+                id: user.id,
                 name,
                 phone,
                 email,

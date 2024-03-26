@@ -1,13 +1,20 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Modal, Form, FloatingLabel } from "react-bootstrap";
+import { Principal } from "@dfinity/principal";
 
-const BuyAsset = ({ assetId, buy, available }) => {
+const BuyAsset = ({ asset, buy, available }) => {
+  
   const [units, setUnits] = useState("");
-
+  
   const isFormFilled = () => units;
-
+  
   const [show, setShow] = useState(false);
+  
+  const principal = window.auth.principalText;
+  const isOwnersAsset = Principal.from(asset.owner).toText() === principal;
+  
+  const isTokenized = asset.isTokenized === "true";
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -17,6 +24,14 @@ const BuyAsset = ({ assetId, buy, available }) => {
       {!available ? (
         <Button disabled={true} variant="outline-dark" className="w-100 py-3">
           Not available
+        </Button>
+      ) : !isTokenized ? (
+        <Button disabled={true} variant="outline-dark" className="w-100 py-3">
+          Not for sale
+        </Button>
+      ) : isOwnersAsset ? (
+        <Button disabled={true} variant="outline-dark" className="w-100 py-3">
+          You own the assets
         </Button>
       ) : (
         <>
@@ -57,7 +72,7 @@ const BuyAsset = ({ assetId, buy, available }) => {
                 disabled={!isFormFilled()}
                 onClick={() => {
                   const unitsInt = parseInt(units, 10);
-                  buy(assetId, unitsInt);
+                  buy(asset.id, unitsInt);
                   handleClose();
                 }}
               >

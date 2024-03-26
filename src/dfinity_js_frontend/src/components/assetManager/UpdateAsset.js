@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Modal, Form, FloatingLabel } from "react-bootstrap";
 
-const UpdateAsset = ({ save }) => {
+const UpdateAsset = ({asset, save }) => {
   const [description, setDescription] = useState("");
   const [isTokenized, setIsTokenized] = useState("");
   const [image, setimage] = useState("");
@@ -49,13 +49,17 @@ const UpdateAsset = ({ save }) => {
               label="Is Tokenized"
               className="mb-3"
             >
-              <Form.Control
-                type="text"
-                placeholder="Is Tokenized"
+              <select
                 onChange={(e) => {
                   setIsTokenized(e.target.value);
                 }}
-              />
+                className="form-select"
+                aria-label="Default select example"
+              >
+                <option defaultValue="">select</option>
+                <option value={"true"}>True</option>
+                <option value={"false"}>False</option>
+              </select>
             </FloatingLabel>
             <FloatingLabel
               controlId="inputDescription"
@@ -95,6 +99,7 @@ const UpdateAsset = ({ save }) => {
             disabled={!isFormFilled()}
             onClick={() => {
               save({
+                id: asset.id,
                 description,
                 isTokenized,
                 image,

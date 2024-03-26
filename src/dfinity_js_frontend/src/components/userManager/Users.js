@@ -10,7 +10,8 @@ import {
   updateUser,
 } from "../../utils/userManager";
 import Header from "../utils/Header";
-import { createAsset } from "../../utils/assetManager";
+import { createAsset, updateAsset } from "../../utils/assetManager";
+import UpdateAsset from "../assetManager/UpdateAsset";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -46,9 +47,10 @@ const Users = () => {
   const addAsset = async (data) => {
     try {
       setLoading(true);
-      const maxSlotsStr = data.maxSlots;
-      data.maxSlots = parseInt(maxSlotsStr, 10) * 10 ** 8;
+      data.availableUnits = parseInt(data.availableUnits, 10);
+      data.pricePerUnit = parseInt(data.pricePerUnit, 10) * 10 ** 8;
       createAsset(data).then((resp) => {
+        getUsers();
         toast(<NotificationSuccess text="Asset added successfully." />);
       });
     } catch (error) {
@@ -69,6 +71,22 @@ const Users = () => {
     } catch (error) {
       console.log({ error });
       toast(<NotificationError text="Failed to create a user." />);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const assetUpdate = async (data) => {
+    try {
+      setLoading(true);
+      data.pricePerUnit = parseInt(data.pricePerUnit, 10) * 10 ** 8;
+      updateAsset(data).then((resp) => {
+        getUsers();
+        toast(<NotificationSuccess text="Asset update successfull." />);
+      });
+    } catch (error) {
+      console.log({ error });
+      toast(<NotificationError text="Failed to update a asset." />);
     } finally {
       setLoading(false);
     }
@@ -97,6 +115,7 @@ const Users = () => {
                   ..._user,
                 }}
                 update={update}
+                updateAsset={assetUpdate}
               />
             ))}
           </Row>

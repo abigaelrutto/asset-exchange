@@ -1,66 +1,61 @@
-# ICP 201 Event Management System
+# ICP Asset Management
+
+This system is an asset management system provides a comprehensive solution for users to manage assets, conduct transactions securely, and maintain user profiles effectively. It leverages modern technologies, robust data structures, and security measures to deliver a reliable and scalable platform for asset management.
 
 ## Overview
 
-This is a comprehensive system for managing events, tickets, and user interactions in a decentralized manner on the Internet Computer blockchain Typescript challenge 201. It includes features like event creation, ticket purchase, payment verification, and user management, demonstrating the capabilities of smart contracts for real-world applications.
+### Modules and Libraries
 
-## Structure
+- **Azle Framework**: The system utilizes various functionalities and data structures provided by the Azle framework, such as `query`, `update`, `Record`, `StableBTreeMap`, `Variant`, `Vec`, `Ok`, `Err`, `Canister`, etc.
+- **UUID**: The UUID library is used for generating unique identifiers.
+- **Ledger**: The Ledger module from Azle's canisters is imported for ledger-related operations.
+- **Hashcode**: A library for generating hash codes is used to create correlation IDs for assets.
+- **Cryptographic Functions**: Global cryptographic functions are implemented for compatibility with the Azle framework.
 
-### 1. Data Structures
+### Data Structures
 
-- **Event**: Represents an event with properties like `id`, `title`, `description`, `date`, `startTime`, `attachmentURL`, `location`, `price`, `seller`, and `reservedAmount`.
-- **EventPayload**: Used for creating or updating an event with necessary properties.
-- **Ticket**: Represents a ticket with properties like `id`, `eventId`, `price`, and `userId`.
-- **User**: Represents a user with properties like `id`, `name`, `email`, `phone`, `address`, and `tickets`.
-- **ErrorType**: Variant type representing different error scenarios.
+1. **Asset**: Represents an asset with properties like `id`, `name`, `description`, `image`, `createdAt`, `updatedAt`, `assetType`, `isTokenized`, `owner`, `availableUnits`, and `pricePerUnit`.
+2. **AssetPayload**: Payload structure for creating an asset.
+3. **UpdateAssetPayload**: Payload structure for updating an asset.
+4. **Ticket**: Represents a ticket related to an asset.
+5. **User**: Represents a user with properties like `id`, `principal`, `name`, `email`, `phone`, and `assets`.
+6. **UserPayload**: Payload structure for creating a user.
+7. **UpdateUserPayload**: Payload structure for updating a user.
+8. **ReservePayment**: Represents a payment reservation with properties like `price`, `status`, `seller`, `paid_at_block`, and `memo`.
+9. **PaymentStatus**: Variant representing different payment status types.
+10. **ErrorType**: Variant representing different error types.
 
-### 2. Storage
+### Storage
 
-- `eventsStorage`: A `StableBTreeMap` to store events by their IDs.
-- `persistedTickets`: A `StableBTreeMap` to store tickets by seller's principal.
-- `eventTickets`: A `StableBTreeMap` to store tickets by event ID.
-- `usersStorage`: A `StableBTreeMap` to store users by their IDs.
+- **StableBTreeMap**: Used for durable storage of assets, tickets, users, pending payments, and persisted payments.
+- Multiple instances of `StableBTreeMap` are initialized to store different types of data.
 
-### 3. Canister Functions
+### Functions
 
-- **Add Event**: Adds a new event to the system.
-- **Add User**: Adds a new user to the system.
-- **Get Events**: Retrieves all events from storage.
-- **Get Tickets**: Retrieves all tickets from storage.
-- **Get Event Tickets**: Retrieves tickets for a specific event.
-- **Get Event**: Retrieves an event by its ID.
-- **Get Sold Tickets**: Retrieves sold tickets for a specific event.
-- **Get Users**: Retrieves all users from storage.
-- **Get User**: Retrieves a user by their ID.
-- **Update Event**: Updates an existing event.
-- **Update User**: Updates an existing user.
-- **Delete Event**: Deletes an event by its ID.
-- **Create Ticket**: Creates a new ticket for an event.
-- **Complete Purchase**: Completes a ticket purchase after verifying payment.
-- **Verify Payment**: Verifies payment for a ticket.
-- **Get Address From Principal**: Gets the address from a principal.
-- **Make Payment**: Initiates a payment to another principal.
+- **Add Asset**: Function to add a new asset to the system. It checks the validity of the payload, generates a unique ID for the asset, updates the owner's assets list, and inserts the asset into the storage.
+- **Get Assets**: Retrieves all assets stored in the system.
+- **Get Asset**: Retrieves a specific asset by its ID.
+- **Update Asset**: Updates an existing asset with new information.
+- **Add User**: Function to add a new user to the system.
+- **Get Users**: Retrieves all users along with their associated assets.
+- **Get User**: Retrieves a specific user by their ID.
+- **Update User**: Updates an existing user's information.
+- **Create Reserve Payment**: Creates a payment reservation for a specific asset. It reduces the available units of the asset, associates the payment with the user, and sets a timeout for reservation expiration.
+- **Complete Payment**: Completes a payment reservation after verifying the payment details. It updates the payment status and persists the payment details.
+- **Verify Payment**: Queries the ledger to verify if a payment has been completed successfully.
 
-### 4. Helper Functions
+### Helper Functions
 
-- **Hash**: Generates a hash code for correlation IDs.
-- **Generate Correlation ID**: Generates a correlation ID for tickets.
-- **Discard By Timeout**: Automatically removes a ticket if not paid within a specified timeframe.
-- **Verify Payment Internal**: Verifies payment internally by checking transaction details.
+- **Generate Correlation ID**: Creates a unique correlation ID for payment reservations using a hash function.
+- **Discard by Timeout**: Sets a timer to discard payment reservations after a specified period.
 
-### 5. Dependencies
+### Workflow
 
-- Imports necessary modules from the `"azle"` and `"azle/canisters/ledger"` libraries.
-- Uses external libraries like `"hashcode"` and `"uuidv4"` for hash code generation and UUID generation, respectively.
+1. Users can add assets to the system, update asset information, and view available assets.
+2. Payment reservations can be created for assets, and payments can be completed after verification.
+3. Users can be added to the system, their information can be updated, and their associated assets can be retrieved.
 
-### 6. Miscellaneous
-
-- Uses `globalThis.crypto` for generating random values, providing a workaround for UUID generation.
-- Utilizes various IC APIs like `ic.call`, `ic.setTimer`, and `ic.time` for blockchain interaction.
-
-### 7. Error Handling
-
-- Functions return `Result` types to handle success or different error scenarios.
+This system provides a robust platform for managing assets and user transactions while ensuring data integrity and security through the Azle framework.
 
 ## Things to be explained in the course
 
